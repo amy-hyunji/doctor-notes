@@ -1,0 +1,11 @@
+.panels {
+    width: 100%;
+    height: 78vh;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 4px 14px 0 rgba(0, 0, 0, 0.19);
+    /*border: 2px solid #8fb1cc;*/
+    
+}
+
+.title {
+    padding: 12px 0px;
+}
