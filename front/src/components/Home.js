@@ -7,6 +7,7 @@ import RightPanel from './RightPanel';
 import './Home.css';
 import drnotes from '../assets/DrNotes-logo.png';
 import testaudio from '../assets/test-audio.mp3'
+import tedaudio from '../assets/MattCutts_2011U.wav'
 
 import { Grid} from '@material-ui/core';
 import {ButtonGroup, Button} from 'semantic-ui-react'
@@ -69,9 +70,10 @@ function Home() {
                 }
             </Grid>
             <ReactAudioPlayer
-                src={testaudio}
+                src={tedaudio}
                 autoPlay
                 controls
+                volume={0.3}
                 style={{marginTop: "2vh"}}
             />
         </div>
