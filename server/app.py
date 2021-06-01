@@ -46,6 +46,7 @@ def home():
 input: audio file, user notes, min/max length of summarization
 output: dict containing `script_start_time`, `script`, `summary`, `score`, `user_note` as keys 
 """
+# 예시 about min/max length를 주면 좋을 것 같다
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -72,7 +73,7 @@ def upload():
             "script_start_time": [],
             "script": [],
             "summary": [],
-            "score": [],
+            "score": [],  # 0-1
             "user_note": [],
         }
         _dict, save_name = get_script_from_audio(audio_file, _dict)
@@ -87,16 +88,27 @@ def upload():
 input: revised user notes, min/max length of summarization
 output: dict containing `script_start_time`, `script`, `summary`, `score`, `user_note` as keys 
 """
-
+# 어떻게 align할 껀지?
+# 어떻게 pass하는게 가장 효율적일지?
+# _dict (script 만 수정해서) => summary, score만 다시 수정해서 내뱉으면 
 
 @app.route("/revise", methods=["GET", "POST"])
 def revise():
     return "tryout second succesful!"
 
 
+@app.route("/drag", methods=['GET', 'POST'])
+def drag():
+   ## do summarization
+   return summary 
+
+
+# 이걸 어떻게 할지? -> front측에서 진행
+"""
 @app.route("/threshold", methods=["GET", "POST"])
 def threshold():
     return "threshold"
+"""
 
 
 def allowed_file(filename):
