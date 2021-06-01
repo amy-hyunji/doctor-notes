@@ -10,7 +10,7 @@ import pandas as pd
 
 from models import T5FineTuner
 from transformers import pipeline
-from transformers import T5Tokenizer, T5ConditionalGeneration, T5Config
+from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
 from torch.utils.data import Dataset, DataLoader
 
 from flask import (
@@ -51,6 +51,14 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
+    _dict = {
+        "script_start_time": [],
+        "script": [],
+        "summary": [],
+        "score": [],  # 0-1
+        "user_note": [],
+    }
+
     if request.method == "POST":
         ###
         audio_file = request.files["audio_file"]
@@ -69,13 +77,6 @@ def upload():
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             redirect(url_for("uploaded_file", filename=filename))
 
-        _dict = {
-            "script_start_time": [],
-            "script": [],
-            "summary": [],
-            "score": [],  # 0-1
-            "user_note": [],
-        }
         _dict, save_name = get_script_from_audio(audio_file, _dict)
         _dict = summarization(_dict, min_length, max_length)
         _dict = get_score(_dict)
@@ -90,17 +91,18 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 """
 # 어떻게 align할 껀지?
 # 어떻게 pass하는게 가장 효율적일지?
-# _dict (script 만 수정해서) => summary, score만 다시 수정해서 내뱉으면 
+# _dict (script 만 수정해서) => summary, score만 다시 수정해서 내뱉으면
+
 
 @app.route("/revise", methods=["GET", "POST"])
 def revise():
     return "tryout second succesful!"
 
 
-@app.route("/drag", methods=['GET', 'POST'])
+@app.route("/drag", methods=["GET", "POST"])
 def drag():
-   ## do summarization
-   return summary 
+    ## do summarization
+    return summary
 
 
 # 이걸 어떻게 할지? -> front측에서 진행
@@ -373,6 +375,7 @@ def get_script_from_audio(audio, _script_dict, write_script=False):
 
 
 def initsetting(summarize_model="t5-base"):
+    print("**** Initial Setting ****")
     # load summarizer model
     summarizer = pipeline(
         "summarization",
@@ -381,6 +384,7 @@ def initsetting(summarize_model="t5-base"):
         framework="pt",
         device=1,
     )
+    print("**** Done Loading Summarizer ****")
 
     # load tokenizer and model for scoring
     tokenizer = T5Tokenizer.from_pretrained("t5-base")
@@ -392,14 +396,15 @@ def initsetting(summarize_model="t5-base"):
         checkpoint_path="./t5_base_nli_lr5.ckpt", hparams=args
     )
     model.eval()
+    print("**** Done Loading T5 ****")
 
     return summarizer, tokenizer, model
 
 
 if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3,2"
     os.environ["TRANSFORMERS_CACHE"] = "/mnt/.cache/huggingface"
 
     summarizer, tokenizer, model = initsetting()
-    app.run(host="0.0.0.0", port=8889, debug=True)
+    app.run(host="0.0.0.0", port=8887, debug=True)
