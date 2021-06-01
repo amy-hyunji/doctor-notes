@@ -89,20 +89,45 @@ def upload():
 input: revised user notes, min/max length of summarization
 output: dict containing `script_start_time`, `script`, `summary`, `score`, `user_note` as keys 
 """
-# 어떻게 align할 껀지?
-# 어떻게 pass하는게 가장 효율적일지?
+# 어떻게 align할 껀지? => front
+# 어떻게 pass하는게 가장 효율적일지? => 수정된 부분 인식해서 chunk로 전달
 # _dict (script 만 수정해서) => summary, score만 다시 수정해서 내뱉으면
 
 
 @app.route("/revise", methods=["GET", "POST"])
 def revise():
-    return "tryout second succesful!"
+    if request.method == "POST":
+        result = request.form.to_dict()
+        _dict = result["dict"]
+        min_length = result["min_length"]
+        max_length = result["max_length"]
+        _dict = summarization(_dict, min_length=min_length, max_length=max_length)
+        _dict = get_score(_dict)
+        return _dict
+    else:
+        raise NotImplementedError("GET method is not implemented in revise()")
+
+
+"""
+input: min/max_length, drag_text 
+output: summarized text
+"""
 
 
 @app.route("/drag", methods=["GET", "POST"])
 def drag():
     ## do summarization
-    return summary
+    if request.method == "POST":
+        result = request.form.to_dict()
+        min_length = result["min_length"]
+        max_length = result["max_length"]
+        drag_text = result["drag_text"]
+
+        _dict = {"script": [drag_text], "summary": []}
+        _dict = summarization(_dict, min_length=min_length, max_length=max_length)
+        return _dict["summary"][0]
+    else:
+        raise NotImplementedError("GET method is not implemented in revise()")
 
 
 # 이걸 어떻게 할지? -> front측에서 진행
@@ -241,11 +266,14 @@ def get_score(_dict):
             )
             for pred in preds:
                 if pred == "contradiction":
-                    _dict["score"] = 0
+                    _dict["score"].append(0)
                 elif pred == "entailment":
-                    _dict["score"] = 1
+                    _dict["score"].append(1)
+                elif pred == "neutral":
+                    _dict["score"].append(0.5)
                 else:
-                    _dict["score"] = 0.5
+                    print(f"#### pred: {pred}")
+                    _dict["score"].append(0.5)
         return _dict
     except:
         raise RuntimeError("Error during scoring")
