@@ -6,6 +6,7 @@ import torch
 import json
 import copy
 import string
+import flask
 import pandas as pd
 
 from models import T5FineTuner
@@ -50,6 +51,7 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 
 
 @app.route("/upload", methods=["GET", "POST"])
+@cross_origin(origin="*")
 def upload():
     _dict = {
         "script_start_time": [],
@@ -59,13 +61,28 @@ def upload():
         "user_note": [],
     }
 
+    my_res = flask.Response()
+
+    """
+    if http_method == "POST":  # 실제요청
+        print("--실제 요청--")
+        my_res.set_data("가져왔지롱")
+    return "yes"
+    """
+
     if request.method == "POST":
+        print("###### POST")
         ###
+        my_res.headers.add("Access-Control-Allow-Origin", "*")
+        print("my res: ", my_res.get_data())
+        return "yes"
+        """
         audio_file = request.files["audio_file"]
         user_note = request.files["user_note"]
         result = request.form.to_dict()
         min_length = result["min_length"]
         max_length = result["max_length"]
+        """
         ###
 
         if audio_file and allowed_file(audio_file.filename):
@@ -83,6 +100,9 @@ def upload():
         _dict = align_user_note(_dict, user_note, save_name)
 
     return _dict
+
+    if request.method == "GET":
+        print("###### GET")
 
 
 """
@@ -313,19 +333,6 @@ def align_user_note(_dict, user_notes, audio_name):
 
     except:
         raise RuntimeError("Error during user note alignment")
-
-
-"""
-input - revised script, audio_name
-output - dict {'script_start_time': [], 'script': []}, audio_name
-
-Functions
-- match the revised script to previous dict 
-"""
-
-
-def get_revised_script(revised_script, audio_name, write_script=False):
-    return None
 
 
 """
