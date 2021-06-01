@@ -4,6 +4,7 @@ import axios from 'axios';
 import LeftPanel from './LeftPanel';
 import MiddlePanel from './MiddlePanel';
 import RightPanel from './RightPanel';
+import NewNote from './NewNote';
 import './Home.css';
 import drnotes from '../assets/DrNotes-logo.png';
 import testaudio from '../assets/test-audio.mp3'
@@ -21,10 +22,11 @@ function Home() {
     const [left, setLeft] = useState(true);
     const [middle, setMiddle] = useState(true);
     const [right, setRight] = useState(true);
+    const [modal, setModal] = useState(true);
   
     const toServer = (input) => {
         const finalResult = input;
-        axios.post(`http://127.0.0.1:5000/tryout`, {
+        axios.post(`http://52.156.155.214:8887/`, {
             sentence: finalResult,
         })
             .then((res) => {
@@ -36,6 +38,7 @@ function Home() {
 
     return (
         <div className="main-page">
+            <NewNote open={modal}></NewNote>
             <img src={drnotes} style={{position: 'absolute', width: '160px', left: '5px', top: '10px'}} /> 
             <div style={{height: "10vh", paddingTop: "2.5vh", float: "right", paddingRight: "20px"}}>
                 
