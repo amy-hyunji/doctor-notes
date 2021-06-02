@@ -6,6 +6,7 @@ import torch
 import json
 import copy
 import string
+import flask
 import pandas as pd
 
 from models import T5FineTuner
@@ -13,6 +14,7 @@ from transformers import pipeline
 from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
 from torch.utils.data import Dataset, DataLoader
 
+from google.cloud import speech
 from flask import (
     Flask,
     abort,
@@ -22,6 +24,7 @@ from flask import (
     flash,
     redirect,
     url_for,
+    make_response,
 )
 from werkzeug.utils import secure_filename
 from flask_cors import CORS, cross_origin
@@ -30,15 +33,16 @@ UPLOAD_FOLDER = "/mnt/hyunji/doctor-notes/database"
 ALLOWED_EXTENSIONS = {"txt", "wav"}
 
 app = Flask(__name__)
-cors = CORS(app)
+CORS(app)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["CORS_HEADERS"] = "Content-Type"
 
 
-@cross_origin
+@cross_origin()
 @app.route("/")
 def home():
+    print("####", request.form.to_dict())
     return "Welcome to server!"
 
 
@@ -46,11 +50,11 @@ def home():
 input: audio file, user notes, min/max length of summarization
 output: dict containing `script_start_time`, `script`, `summary`, `score`, `user_note` as keys 
 """
-# 예시 about min/max length를 주면 좋을 것 같다
 
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
+    
     _dict = {
         "script_start_time": [],
         "script": [],
@@ -60,29 +64,36 @@ def upload():
     }
 
     if request.method == "POST":
-        ###
-        audio_file = request.files["audio_file"]
-        user_note = request.files["user_note"]
+        print("###### POST")
+        audio_file = request.files['audio_file']
+        user_note = request.files['user_note']
+        print(f"** audio_file: {audio_file.filename}")
+        print(f"** user_note: {user_note.filename}")
+        """
         result = request.form.to_dict()
         min_length = result["min_length"]
         max_length = result["max_length"]
+        """
         ###
-
         if audio_file and allowed_file(audio_file.filename):
             filename = secure_filename(audio_file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            redirect(url_for("uploaded_file", filename=filename))
+            audio_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         if user_note and allowed_file(user_note.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            redirect(url_for("uploaded_file", filename=filename))
+            filename = secure_filename(user_note.filename)
+            user_note.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-        _dict, save_name = get_script_from_audio(audio_file, _dict)
+        _dict, save_name = get_script_from_audio(audio_file.filename, _dict)
         _dict = summarization(_dict, min_length, max_length)
-        _dict = get_score(_dict)
-        _dict = align_user_note(_dict, user_note, save_name)
+        _dict = get_score(_dict)    
+        ### TODO user_note to dict
+        # _dict = align_user_note(_dict, user_note.filename, save_name)
 
-    return _dict
+        my_res.set_data(_dict)
+
+        return my_res  # _dict
+
+    elif request.method == "GET":
+        print("###### GET")
 
 
 """
@@ -94,10 +105,17 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 # _dict (script 만 수정해서) => summary, score만 다시 수정해서 내뱉으면
 
 
-@app.route("/revise", methods=["GET", "POST"])
+@cross_origin(origin="*")
+@app.route("/revise", methods=["GET", "POST", "OPTIONS"])
 def revise():
-    if request.method == "POST":
+    my_res = flask.Response()
+    if request.method == "OPTIONS":  # CORS preflight
+        print("###### OPTIONS")
+        return _build_cors_prelight_response()
+    elif request.method == "POST":
+        my_res.headers.add("Access-Control-Allow-Origin", "*")
         result = request.form.to_dict()
+        print(result)
         _dict = result["dict"]
         min_length = result["min_length"]
         max_length = result["max_length"]
@@ -114,10 +132,16 @@ output: summarized text
 """
 
 
-@app.route("/drag", methods=["GET", "POST"])
+@cross_origin(origin="*")
+@app.route("/drag", methods=["GET", "POST", "OPTIONS"])
 def drag():
+    my_res = flask.Response()
     ## do summarization
-    if request.method == "POST":
+    if request.method == "OPTIONS":  # CORS preflight
+        print("###### OPTIONS")
+        return _build_cors_prelight_response()
+    elif request.method == "POST":
+        my_res.headers.add("Access-Control-Allow-Origin", "*")
         result = request.form.to_dict()
         min_length = result["min_length"]
         max_length = result["max_length"]
@@ -136,6 +160,14 @@ def drag():
 def threshold():
     return "threshold"
 """
+
+
+def _build_cors_prelight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
 
 
 def allowed_file(filename):
@@ -238,94 +270,89 @@ def summarization(_dict, min_length=30, max_length=180):
 
 
 def get_score(_dict):
-    try:
-        total_summary = summarizer(
-            "".join(_dict["script"]),
-            min_length=100,
-            max_length=300,
-            no_repeat_ngram_size=3,
-        )[0]["summary_text"]
+    total_summary = summarizer(
+        "".join(_dict["script"]),
+        min_length=100,
+        max_length=300,
+        no_repeat_ngram_size=3,
+    )[0]["summary_text"]
 
-        dataset = NLIDataset(tokenizer, _dict, total_summary)
-        dataloader = DataLoader(
-            dataset, shuffle=False, batch_size=10, drop_last=False, num_workers=8
+    dataset = NLIDataset(tokenizer, _dict, total_summary)
+    dataloader = DataLoader(
+        dataset, shuffle=False, batch_size=10, drop_last=False, num_workers=8
+    )
+    print("~!~!~!~ generate!")
+    
+    for batch in dataloader:
+        generated_ids = model.model.generate(
+            batch["source_ids"].to("cuda:0"),
+            attention_mask=batch["src_mask"].to("cuda:0"),
+            use_cache=True,
+            max_length=5,
+            early_stopping=True,
         )
-
-        for batch in dataloader:
-            generated_ids = model.model.generate(
-                batch["source_ids"].cuda(),
-                attention_mask=batch["src_mask"].cuda(),
-                use_cache=True,
-                max_length=5,
-                early_stopping=True,
-            )
-            preds = tokenizer.batch_decode(
-                generated_ids,
-                skip_special_tokens=True,
-                clean_up_tokenization_spaces=True,
-            )
-            for pred in preds:
-                if pred == "contradiction":
-                    _dict["score"].append(0)
-                elif pred == "entailment":
-                    _dict["score"].append(1)
-                elif pred == "neutral":
-                    _dict["score"].append(0.5)
-                else:
-                    print(f"#### pred: {pred}")
-                    _dict["score"].append(0.5)
-        return _dict
-    except:
-        raise RuntimeError("Error during scoring")
-
-
-def align_user_note(_dict, user_notes, audio_name):
-    try:
-        note_idx = 0
-        note_total_num = len(user_note["start_time"])
-        for i, _start in enumerate(_dict["script_start_time"]):
-            if note_idx == note_total_num:
-                _dict["user_note"].append([])
-                continue
-            _user_note = []
-            if i == len(_dict["script_start_time"]) - 1:
-                while note_idx < note_total_num:
-                    _user_note.append(user_note["note"][note_idx])
-                    note_idx += 1
+        preds = tokenizer.batch_decode(
+            generated_ids,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
+        )
+        print(f"~!~!~! Pred: {preds}")
+        for pred in preds:
+            if pred == "contradiction":
+                _dict["score"].append(0)
+            elif pred == "entailment":
+                _dict["score"].append(1)
+            elif pred == "neutral":
+                _dict["score"].append(0.5)
             else:
-                next_start = _dict["script_start_time"][i + 1]
-                print(f"idx: {i}   start time: {_start}   next_start: {next_start}")
-                while (
-                    note_idx < note_total_num
-                    and user_note["start_time"][note_idx] < next_start
-                ):
-                    print(
-                        f"### NOTE idx: {note_idx} time: {user_note['start_time'][note_idx]} note: {user_note['note'][note_idx]}"
-                    )
-                    _user_note.append(user_note["note"][note_idx])
-                    note_idx += 1
-            _dict["user_note"].append(_user_note)
-
-        df = pd.DataFrame(_dict)
-        df.to_csv(os.path.join(UPLOAD_FOLDER, f"{audio_name}_info.csv"))
-
-        return _dict
-
-    except:
-        raise RuntimeError("Error during user note alignment")
+                print(f"#### pred: {pred}")
+                _dict["score"].append(0.5)
+    return _dict
 
 
-"""
-input - revised script, audio_name
-output - dict {'script_start_time': [], 'script': []}, audio_name
+def align_user_note(_dict, user_notes_name, audio_name):
+    # get dict from user_notes
+    user_note = {'start_time': [], 'note': []}
+    with open(os.path.join(UPLOAD_FOLDER, user_notes_name)) as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.split("\n")[0]
+            print(line)
+            _time, _note = line.split("\t")
+            _time = int(_time.split(":")[0])
+            print(f"time: {_time}, note: {_note}")
+            user_note['start_time'].append(_time)
+            user_note['note'].append(_note)
 
-Functions
-- match the revised script to previous dict 
-"""
+    note_idx = 0
+    note_total_num = len(user_note["start_time"])
+    for i, _start in enumerate(_dict["script_start_time"]):
+        if note_idx == note_total_num:
+            _dict["user_note"].append([])
+            continue
+        _user_note = []
+        if i == len(_dict["script_start_time"]) - 1:
+            while note_idx < note_total_num:
+                _user_note.append(user_note["note"][note_idx])
+                note_idx += 1
+        else:
+            next_start = _dict["script_start_time"][i + 1]
+            print(f"idx: {i}   start time: {_start}   next_start: {next_start}")
+            while (
+                note_idx < note_total_num
+                and user_note["start_time"][note_idx] < next_start
+            ):
+                print(
+                    f"### NOTE idx: {note_idx} time: {user_note['start_time'][note_idx]} note: {user_note['note'][note_idx]}"
+                )
+                _user_note.append(user_note["note"][note_idx])
+                note_idx += 1
+        _dict["user_note"].append(_user_note)
 
+    df = pd.DataFrame(_dict)
+    df.to_csv(os.path.join(UPLOAD_FOLDER, f"{audio_name}_info.csv"))
 
-def get_revised_script(revised_script, audio_name, write_script=False):
-    return None
+    return _dict
 
 
 """
@@ -348,11 +375,11 @@ def get_script_from_audio(audio, _script_dict, write_script=False):
         audio_name = "".join(audio.split(".")[:-1])
         print("## Working on {audio_name}")
 
-        success = convert2mono(audio_file, f"mono_{audio_file}")
+        success = convert2mono(os.path.join(UPLOAD_FOLDER, audio), f"mono_{audio}")
         if not success:
             raise ValueError("Audio format is not convertible")
 
-        os.system(f"python video-splitter/ffmpeg-split.py -f mono_{audio_file} -s 50")
+        os.system(f"python video-splitter/ffmpeg-split.py -f mono_{audio} -s 50")
         audio_path = os.path.join(UPLOAD_FOLDER, audio_name)
         os.system(f"mkdir {audio_path}")
         os.system(f"mv mono_{audio_name}-* {audio_path}")
@@ -417,13 +444,14 @@ def initsetting(summarize_model="t5-base"):
     # load tokenizer and model for scoring
     tokenizer = T5Tokenizer.from_pretrained("t5-base")
     config = T5Config()
-    model = T5ForConditionalGeneration(config).cuda()
+    model = T5ForConditionalGeneration(config).to("cuda:0")
     args = get_args()
     model = T5FineTuner(args)
     model = T5FineTuner.load_from_checkpoint(
         checkpoint_path="./t5_base_nli_lr5.ckpt", hparams=args
     )
     model.eval()
+    model.to("cuda:0")
     print("**** Done Loading T5 ****")
 
     return summarizer, tokenizer, model
@@ -431,8 +459,20 @@ def initsetting(summarize_model="t5-base"):
 
 if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3,2"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"
     os.environ["TRANSFORMERS_CACHE"] = "/mnt/.cache/huggingface"
 
     summarizer, tokenizer, model = initsetting()
+    """
+    _dict = {'script_start_time': [], 'script': [], 'summary': [], 'score': [], 'user_note': []}
+    # _dict, save_name = get_script_from_audio("MattCutts_2011U_copy.wav", _dict)
+    df = pd.read_csv("MattCutts_2011U_copy_script.csv")
+    _dict['script_start_time'] = df['script_start_time']
+    _dict['script'] = df['script']
+    _dict = summarization(_dict, 30, 150)
+    _dict = get_score(_dict)
+    _dict = align_user_note(_dict, "myNotes.txt", "MattCutts_2011U_copy")
+    df = pd.DataFrame(_dict)
+    df.to_csv(os.path.join(UPLOAD_FOLDER, "MattCutts_2011U_copy_info.csv"))
+    """
     app.run(host="0.0.0.0", port=8887, debug=True)
