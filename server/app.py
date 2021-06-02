@@ -7,6 +7,7 @@ import json
 import copy
 import string
 import flask
+import time
 import pandas as pd
 
 from models import T5FineTuner
@@ -46,9 +47,11 @@ def home():
     return "Welcome to server!"
 
 
+@cross_origin()
 @app.route("/files", methods=["POST"])
 def files():
     if request.method == "POST":
+
         print("###### POST")
         audio_file = request.files["audio_file"]
         user_note = request.files["user_note"]
@@ -62,7 +65,7 @@ def files():
             note_filename = secure_filename(user_note.filename)
             user_note.save(os.path.join(app.config["UPLOAD_FOLDER"], note_filename))
             print("Done saving user_note")
-
+        
         return jsonify({"audio_filename": audio_filename, "note_filename": note_filename})
 
 
