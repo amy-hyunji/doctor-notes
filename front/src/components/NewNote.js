@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import drnotes from '../assets/DrNotes-logo.png';
 import './NewNote.css';
 import axios from 'axios'
-
+import qs from 'qs';
 
 import { Button, Header, Image, Modal, ModalActions, Input, Form } from 'semantic-ui-react';
 import { useDropzone } from 'react-dropzone'
@@ -13,6 +13,7 @@ function NewNote() {
     const [modal, setModal] = useState(true);
     const [min, setMin] = useState('');
     const [max, setMax] = useState(''); 
+    const [isLoading, setIsLoading] = useState(false);
 
     const {
         acceptedFiles,
@@ -41,10 +42,11 @@ function NewNote() {
         </li>
     ));
 
-    
+
 
     const sendToServer = () => {
-        var formData = new FormData()
+        
+        const formData = new FormData()
         
         console.log(acceptedFiles)
         for (var f in acceptedFiles){
@@ -56,30 +58,58 @@ function NewNote() {
                 formData.append('audio_file', acceptedFiles[f])
             }
         }
-        formData.append("min_length", min)
-        formData.append("max_length", max)
-        console.log(formData.getAll('user_note'))
-        console.log(formData.getAll('audio_file'))
-        console.log(formData.getAll('min_length'), formData.getAll('max_length'))
-        axios.post('http://52.156.155.214:8887/upload', {
-            data: formData
-        }).then((response) => {
-            console.log(response);
-        }, (error) => {
-            console.log(error);
-        });
-
+        //formData.append("min_length", min)
+        //formData.append("max_length", max)
+        
+        const wordCloud = {
+            textID: 353535,
+            text: "353535 - content",
+            maxCount: 30,
+            minLength: 1,
+            words: "word"
+        }
+        //_post(wordCloud);
         /*
-        axios.post('http://52.156.155.214:8887/upload', {
-            data: "text"
-        }).then((response) => {
-            console.log(response);
-        }, (error) => {
-            console.log(error);
+        fetch(`http://52.156.155.214:8887/upload`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(wordCloud),
+            mode:'cors'
+        }).then(res => {
+            console.log("status", res.status)
+            if(res.status != 200) {
+            throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
         });
-        */
+        
+       */
+      setIsLoading(true)
+        fetch(`http://52.156.155.214:8887/upload`, {
+            method: 'POST',
+
+            body: formData,
+            mode:'no-cors'
+        }).then(res => {
+            setIsLoading(false)
+            console.log("status", res.status)
+            if(res.status != 200) {
+                throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
+            
+        });
+        
+
     }
 
+    
     
     const handleChange = (e) => {
         setMin(e.target.value)
@@ -135,6 +165,7 @@ function NewNote() {
                 labelPosition='right'
                 icon='arrow right'
                 content='Begin Loading'
+                loading={isLoading}
               />
             </Modal.Actions>
           </Modal>
