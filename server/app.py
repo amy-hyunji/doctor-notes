@@ -46,6 +46,26 @@ def home():
     return "Welcome to server!"
 
 
+@app.route("/files", methods=["POST"])
+def files():
+    if request.method == "POST":
+        print("###### POST")
+        audio_file = request.files["audio_file"]
+        user_note = request.files["user_note"]
+        print(f"** audio_file: {audio_file.filename}")
+        print(f"** user_note: {user_note.filename}")
+        if audio_file and allowed_file(audio_file.filename):
+            audio_filename = secure_filename(audio_file.filename)
+            audio_file.save(os.path.join(app.config["UPLOAD_FOLDER"], audio_filename))
+            print("Done saving audio_file")
+        if user_note and allowed_file(user_note.filename):
+            note_filename = secure_filename(user_note.filename)
+            user_note.save(os.path.join(app.config["UPLOAD_FOLDER"], note_filename))
+            print("Done saving user_note")
+
+        return jsonify({"audio_filename": audio_filename, "note_filename": note_filename})
+
+
 """
 input: audio file, user notes, min/max length of summarization
 output: dict containing `script_start_time`, `script`, `summary`, `score`, `user_note` as keys 
@@ -54,7 +74,7 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
-    
+
     _dict = {
         "script_start_time": [],
         "script": [],
@@ -65,32 +85,28 @@ def upload():
 
     if request.method == "POST":
         print("###### POST")
-        audio_file = request.files['audio_file']
-        user_note = request.files['user_note']
-        print(f"** audio_file: {audio_file.filename}")
-        print(f"** user_note: {user_note.filename}")
-        """
-        result = request.form.to_dict()
+        result = request.json
+        print(f"result: {result}")
+        print(f"get_json: {request.get_json()}")
         min_length = result["min_length"]
         max_length = result["max_length"]
+        audio_filename = result["audio_filename"]
+        note_filename = result["note_filename"]
+        print(f"min_length: {min_length}, max_length: {max_length}")
+        print(f"audio: {audio_filename}, note: {note_filename}")
+
+        _dict, save_name = get_script_from_audio(audio_filename, _dict)
         """
-        ###
-        if audio_file and allowed_file(audio_file.filename):
-            filename = secure_filename(audio_file.filename)
-            audio_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-        if user_note and allowed_file(user_note.filename):
-            filename = secure_filename(user_note.filename)
-            user_note.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-
-        _dict, save_name = get_script_from_audio(audio_file.filename, _dict)
+        df = pd.read_csv("MattCutts_2011U_script.csv")
+        _dict['script_start_time'] = df['script_start_time']
+        _dict['script'] = df['script']
+        save_name = "MattCutts_2011U_script"
+        """
         _dict = summarization(_dict, min_length, max_length)
-        _dict = get_score(_dict)    
-        ### TODO user_note to dict
-        # _dict = align_user_note(_dict, user_note.filename, save_name)
+        _dict = get_score(_dict)
+        _dict = align_user_note(_dict, note_filename, save_name)
 
-        my_res.set_data(_dict)
-
-        return my_res  # _dict
+        return jsonify(_dict)
 
     elif request.method == "GET":
         print("###### GET")
@@ -100,9 +116,6 @@ def upload():
 input: revised user notes, min/max length of summarization
 output: dict containing `script_start_time`, `script`, `summary`, `score`, `user_note` as keys 
 """
-# 어떻게 align할 껀지? => front
-# 어떻게 pass하는게 가장 효율적일지? => 수정된 부분 인식해서 chunk로 전달
-# _dict (script 만 수정해서) => summary, score만 다시 수정해서 내뱉으면
 
 
 @cross_origin(origin="*")
@@ -282,7 +295,7 @@ def get_score(_dict):
         dataset, shuffle=False, batch_size=10, drop_last=False, num_workers=8
     )
     print("~!~!~!~ generate!")
-    
+
     for batch in dataloader:
         generated_ids = model.model.generate(
             batch["source_ids"].to("cuda:0"),
@@ -312,7 +325,7 @@ def get_score(_dict):
 
 def align_user_note(_dict, user_notes_name, audio_name):
     # get dict from user_notes
-    user_note = {'start_time': [], 'note': []}
+    user_note = {"start_time": [], "note": []}
     with open(os.path.join(UPLOAD_FOLDER, user_notes_name)) as f:
         lines = f.readlines()
         for line in lines:
@@ -321,8 +334,8 @@ def align_user_note(_dict, user_notes_name, audio_name):
             _time, _note = line.split("\t")
             _time = int(_time.split(":")[0])
             print(f"time: {_time}, note: {_note}")
-            user_note['start_time'].append(_time)
-            user_note['note'].append(_note)
+            user_note["start_time"].append(_time)
+            user_note["note"].append(_note)
 
     note_idx = 0
     note_total_num = len(user_note["start_time"])
@@ -373,7 +386,7 @@ def get_script_from_audio(audio, _script_dict, write_script=False):
     ## convert input `audio` file to google API input format
     try:
         audio_name = "".join(audio.split(".")[:-1])
-        print("## Working on {audio_name}")
+        print(f"## Working on {audio_name}")
 
         success = convert2mono(os.path.join(UPLOAD_FOLDER, audio), f"mono_{audio}")
         if not success:
