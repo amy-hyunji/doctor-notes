@@ -58,38 +58,14 @@ function NewNote() {
                 formData.append('audio_file', acceptedFiles[f])
             }
         }
-        //formData.append("min_length", min)
-        //formData.append("max_length", max)
+        //formData.append("min_length", {min_length: "min"})
+        //formData.append("max_length", {max_length: "max"})
         
-        const wordCloud = {
-            textID: 353535,
-            text: "353535 - content",
-            maxCount: 30,
-            minLength: 1,
-            words: "word"
-        }
-        //_post(wordCloud);
-        /*
-        fetch(`http://52.156.155.214:8887/upload`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(wordCloud),
-            mode:'cors'
-        }).then(res => {
-            console.log("status", res.status)
-            if(res.status != 200) {
-            throw new Error(res.statusText);
-            }
-            return res.json();
-        }).then(data => {
-            console.log(data)
-        });
-        
-       */
-      setIsLoading(true)
-        fetch(`http://52.156.155.214:8887/upload`, {
+        console.log(formData.getAll("min_length"))
+        console.log(formData.getAll("max_length"))
+
+        setIsLoading(true)
+        fetch(`http://52.156.155.214:8887/files`, {
             method: 'POST',
 
             body: formData,
@@ -103,10 +79,34 @@ function NewNote() {
             return res.json();
         }).then(data => {
             console.log(data)
-            
+            sendMinMax(data)
         });
         
 
+    }
+
+    const sendMinMax = (data) => {
+        data['min_length'] = min
+        data['max_length'] = max
+        
+        console.log(data)
+        fetch(`http://52.156.155.214:8887/upload`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+            mode:'cors'
+        }).then(res => {
+            console.log("status", res.status)
+            if(res.status != 200) {
+            throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
+        });
+        
     }
 
     
@@ -154,6 +154,7 @@ function NewNote() {
                         <Form.Input label='Minimum length' placeholder='Minimum length' value={min} onChange={handleChange} />
                         <Form.Input label='Maximum length' placeholder='Maximum length' value={max} onChange={handleChange2} />
                     </Form.Group>
+                    <Button type='submit' onClick={() => sendMinMax()}>Submit</Button>
                 </Form>
 
               </Modal.Description>
