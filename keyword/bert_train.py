@@ -162,5 +162,64 @@ def main():
    trainer = Trainer(callbacks=[checkpoint_callback], max_epochs=args['epoch'], gpus=args['gpus'])
    trainer.fit(model)
 
+def preprocess_dataframe(df, tokenizer):
+
+   def clean(x):
+      x = x.strip()
+      x = repeat_normalize(x, num_repeats=2)
+      return x
+
+   df['document'] = df['document'].map(lambda x: tokenizer.encode(clean(str(x)), padding='max_length', max_length=150, truncation=True))
+   return df
+
+def test():
+
+   args = {
+      'random_seed': 42,
+      'pretrained_model': 'bert-base-uncased',
+      'pretrained_tokenizer': 'bert-base-uncased',
+      'batch_size': 16, 
+      'lr': 5e-6,
+      'epoch': 10,
+      'max_length': 150,
+      'train_data_path': './PAWS/train.csv',
+      'val_data_path': './PAWS/dev.csv',
+      'optimizer': 'AdamW',
+      'lr_scheduler': 'exp',
+      'fp16': False,
+      'tpu_cores': 0,
+      'cpu_workers': 4,
+      'gpus': 1
+   }
+   seed_everything(args['random_seed'])
+   model = Model.load_from_checkpoint(checkpoint_path="./lightning_logs/version_9/checkpoints/epochepoch=1-val_accval_acc=0.9672.ckpt", hparams=args).cuda()
+   model.eval()
+
+   tokenizer = BertTokenizer.from_pretrained(args['pretrained_tokenizer']) 
+
+   df = pd.read_csv("./PAWS/dev.csv")
+   df = preprocess_dataframe(df, tokenizer) 
+   dataset = TensorDataset(torch.tensor(df['document'].to_list(), dtype=torch.long), torch.tensor(df['label'].to_list(), dtype=torch.long))
+
+   dataloader = DataLoader(dataset, batch_size=16, shuffle=False, num_workers=4)
+  
+   _dict = {'input': df['document'], 'label': df['label'], 'pred': []}
+
+   print("##### Start!")
+   for batch in dataloader:
+      data, labels = batch 
+      output = model(input_ids=data.cuda(), labels=labels.cuda())
+
+      loss = output.loss
+      logits = output.logits
+
+      preds = logits.argmax(dim=-1).cpu().numpy()
+      _dict['pred'].extend(preds) 
+     
+   print("##### Done!")
+   df = pd.DataFrame(_dict)
+   df.to_csv("test.csv")
+
 if __name__ == "__main__":
-   main()
+#main()
+   test()
