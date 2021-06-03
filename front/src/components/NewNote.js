@@ -4,11 +4,12 @@ import drnotes from '../assets/DrNotes-logo.png';
 import './NewNote.css';
 import axios from 'axios'
 import qs from 'qs';
+import sampleDict from '../assets/short_info.csv'
 
 import { Button, Header, Image, Modal, ModalActions, Input, Form } from 'semantic-ui-react';
 import { useDropzone } from 'react-dropzone'
 
-function NewNote() {
+function NewNote(props) {
     //Const over here
     const [modal, setModal] = useState(true);
     const [min, setMin] = useState('');
@@ -58,22 +59,20 @@ function NewNote() {
                 formData.append('audio_file', acceptedFiles[f])
             }
         }
-        //formData.append("min_length", {min_length: "min"})
-        //formData.append("max_length", {max_length: "max"})
-        
-        console.log(formData.getAll("min_length"))
-        console.log(formData.getAll("max_length"))
+
 
         setIsLoading(true)
         fetch(`http://52.156.155.214:8887/files`, {
             method: 'POST',
 
             body: formData,
-            mode:'no-cors'
+            //mode:'no-cors'
         }).then(res => {
             setIsLoading(false)
-            console.log("status", res.status)
-            if(res.status != 200) {
+            //console.log("res", res)
+            //console.log("status", res.status)
+            //console.log('res json', res.json())
+            if(res.status !== 200) {
                 throw new Error(res.statusText);
             }
             return res.json();
@@ -86,9 +85,12 @@ function NewNote() {
     }
 
     const sendMinMax = (data) => {
-        data['min_length'] = min
-        data['max_length'] = max
+        data['min_length'] = parseInt(min)
+        data['max_length'] = parseInt(max)
+        props.setMin(parseInt(min))
+        props.setMax(parseInt(max))
         
+        setIsLoading(true)
         console.log(data)
         fetch(`http://52.156.155.214:8887/upload`, {
             method: 'POST',
@@ -96,15 +98,18 @@ function NewNote() {
             'Content-Type': 'application/json'
             },
             body: JSON.stringify(data),
-            mode:'cors'
+            //mode:'cors'
         }).then(res => {
-            console.log("status", res.status)
-            if(res.status != 200) {
-            throw new Error(res.statusText);
+            setIsLoading(false)
+            //console.log("status", res.status)
+            if(res.status !== 200) {
+                throw new Error(res.statusText);
             }
             return res.json();
         }).then(data => {
             console.log(data)
+            setModal(false)
+            props.getContents(data)
         });
         
     }
@@ -116,6 +121,21 @@ function NewNote() {
     }
     const handleChange2 = (e) => {
         setMax(e.target.value)
+    }
+
+    const clickButton = () => {
+        const sampleDict = {
+            score: [0.5, 0.5, 0.5, 0.5, 0.5],
+            script: ["cnn's kelly wallace completed 30-day challengescnn's kelly wallace completed 30-day challengesNews from your life. News from your life. News from your life. News from your life. News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b"],
+            script_start_time: [0, 50, 100, 150, 200],
+            summary: ["cnn's kelly wallace completed 30-day challenges . she hiked up the highest mountain in africa last year . the challenge helped her becom", "engineer, matt cutts the stalking his powerful visual download the video at ted.com . 30 days is just about the right amount of time to ad", "cnn's kelly wallace completed 30-day challenges . she hiked up the highest mountain in africa last year . the challenge helped her becom", "engineer, matt cutts the stalking his powerful visual download the video at ted.com . 30 days is just about the right amount of time to ad", "cnn's kelly wallace completed 30-day challenges . she hiked up the highest mountain in africa last year . the challenge helped her becom"],
+            user_note: [["hello", "this"], ["is"], ["user note", "lol"], [], ["last one"]]
+
+        }
+        setModal(false)
+        //console.log(sampleDict)
+        
+        props.getContents(sampleDict)
     }
 
     return (
@@ -154,20 +174,21 @@ function NewNote() {
                         <Form.Input label='Minimum length' placeholder='Minimum length' value={min} onChange={handleChange} />
                         <Form.Input label='Maximum length' placeholder='Maximum length' value={max} onChange={handleChange2} />
                     </Form.Group>
-                    <Button type='submit' onClick={() => sendMinMax()}>Submit</Button>
+                    
                 </Form>
 
               </Modal.Description>
               
             </Modal.Content>
             <Modal.Actions>
-              <Button
-                onClick={(acceptedFiles) => sendToServer(acceptedFiles)}
-                labelPosition='right'
-                icon='arrow right'
-                content='Begin Loading'
-                loading={isLoading}
-              />
+                <Button content="Testing" onClick={clickButton}></Button>
+                <Button
+                    onClick={(acceptedFiles) => sendToServer(acceptedFiles)}
+                    labelPosition='right'
+                    icon='arrow right'
+                    content='Begin Loading'
+                    loading={isLoading}
+                />
             </Modal.Actions>
           </Modal>
       </div>
