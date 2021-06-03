@@ -66,6 +66,7 @@ def files():
             user_note.save(os.path.join(app.config["UPLOAD_FOLDER"], note_filename))
             print("Done saving user_note")
         
+        # return jsonify({"audio_filename": "hi", "note_filename": note_filename})
         return jsonify({"audio_filename": audio_filename, "note_filename": note_filename})
 
 
@@ -122,22 +123,18 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 
 
 @cross_origin(origin="*")
-@app.route("/revise", methods=["GET", "POST", "OPTIONS"])
+@app.route("/revise", methods=["GET", "POST"])
 def revise():
-    my_res = flask.Response()
-    if request.method == "OPTIONS":  # CORS preflight
-        print("###### OPTIONS")
-        return _build_cors_prelight_response()
-    elif request.method == "POST":
+    if request.method == "POST":
         my_res.headers.add("Access-Control-Allow-Origin", "*")
-        result = request.form.to_dict()
+        result = request.json
         print(result)
         _dict = result["dict"]
         min_length = result["min_length"]
         max_length = result["max_length"]
         _dict = summarization(_dict, min_length=min_length, max_length=max_length)
         _dict = get_score(_dict)
-        return _dict
+        return jsonify(_dict)
     else:
         raise NotImplementedError("GET method is not implemented in revise()")
 
@@ -149,14 +146,9 @@ output: summarized text
 
 
 @cross_origin(origin="*")
-@app.route("/drag", methods=["GET", "POST", "OPTIONS"])
+@app.route("/drag", methods=["GET", "POST"])
 def drag():
-    my_res = flask.Response()
-    ## do summarization
-    if request.method == "OPTIONS":  # CORS preflight
-        print("###### OPTIONS")
-        return _build_cors_prelight_response()
-    elif request.method == "POST":
+    if request.method == "POST":
         my_res.headers.add("Access-Control-Allow-Origin", "*")
         result = request.form.to_dict()
         min_length = result["min_length"]
@@ -165,7 +157,7 @@ def drag():
 
         _dict = {"script": [drag_text], "summary": []}
         _dict = summarization(_dict, min_length=min_length, max_length=max_length)
-        return _dict["summary"][0]
+        return jsonify({'summary': _dict["summary"][0]})
     else:
         raise NotImplementedError("GET method is not implemented in revise()")
 
@@ -327,49 +319,52 @@ def get_score(_dict):
 
 
 def align_user_note(_dict, user_notes_name, audio_name):
-    # get dict from user_notes
-    user_note = {"start_time": [], "note": []}
-    with open(os.path.join(UPLOAD_FOLDER, user_notes_name)) as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.split("\n")[0]
-            print(line)
-            _time, _note = line.split("\t")
-            _time = int(_time.split(":")[0])
-            print(f"time: {_time}, note: {_note}")
-            user_note["start_time"].append(_time)
-            user_note["note"].append(_note)
+    try:
+        # get dict from user_notes
+        user_note = {"start_time": [], "note": []}
+        with open(os.path.join(UPLOAD_FOLDER, user_notes_name)) as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.split("\n")[0]
+                print(line)
+                _time, _note = line.split("\t")
+                _time = int(_time.split(":")[0])
+                print(f"time: {_time}, note: {_note}")
+                user_note["start_time"].append(_time)
+                user_note["note"].append(_note)
 
-    note_idx = 0
-    note_total_num = len(user_note["start_time"])
-    for i, _start in enumerate(_dict["script_start_time"]):
-        if note_idx == note_total_num:
-            _dict["user_note"].append([])
-            continue
-        _user_note = []
-        if i == len(_dict["script_start_time"]) - 1:
-            while note_idx < note_total_num:
-                _user_note.append(user_note["note"][note_idx])
-                note_idx += 1
-        else:
-            next_start = _dict["script_start_time"][i + 1]
-            print(f"idx: {i}   start time: {_start}   next_start: {next_start}")
-            while (
-                note_idx < note_total_num
-                and user_note["start_time"][note_idx] < next_start
-            ):
-                print(
-                    f"### NOTE idx: {note_idx} time: {user_note['start_time'][note_idx]} note: {user_note['note'][note_idx]}"
-                )
-                _user_note.append(user_note["note"][note_idx])
-                note_idx += 1
-        _dict["user_note"].append(_user_note)
+        note_idx = 0
+        note_total_num = len(user_note["start_time"])
+        for i, _start in enumerate(_dict["script_start_time"]):
+            if note_idx == note_total_num:
+                _dict["user_note"].append([])
+                continue
+            _user_note = []
+            if i == len(_dict["script_start_time"]) - 1:
+                while note_idx < note_total_num:
+                    _user_note.append(user_note["note"][note_idx])
+                    note_idx += 1
+            else:
+                next_start = _dict["script_start_time"][i + 1]
+                print(f"idx: {i}   start time: {_start}   next_start: {next_start}")
+                while (
+                    note_idx < note_total_num
+                    and user_note["start_time"][note_idx] < next_start
+                ):
+                    print(
+                        f"### NOTE idx: {note_idx} time: {user_note['start_time'][note_idx]} note: {user_note['note'][note_idx]}"
+                    )
+                    _user_note.append(user_note["note"][note_idx])
+                    note_idx += 1
+            _dict["user_note"].append(_user_note)
 
-    df = pd.DataFrame(_dict)
-    df.to_csv(os.path.join(UPLOAD_FOLDER, f"{audio_name}_info.csv"))
+        df = pd.DataFrame(_dict)
+        df.to_csv(os.path.join(UPLOAD_FOLDER, f"{audio_name}_info.csv"))
 
-    return _dict
-
+        return _dict
+    except:
+        print("Error in aligning user note")
+        return _dict 
 
 """
 input - audio file
@@ -491,4 +486,5 @@ if __name__ == "__main__":
     df = pd.DataFrame(_dict)
     df.to_csv(os.path.join(UPLOAD_FOLDER, "MattCutts_2011U_copy_info.csv"))
     """
-    app.run(host="0.0.0.0", port=8887, debug=True)
+#app.run(host="0.0.0.0", port=8887, debug=True, ssl_context=('/mnt/hyunji/doctor-notes/server/server.crt', '/mnt/hyunji/doctor-notes/server/server.key'))
+    app.run(host="0.0.0.0", port=8887, debug=True, ssl_context='adhoc')
