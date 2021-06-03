@@ -1,5 +1,6 @@
 # CS473 Human AI Interaction
 Repository for Final Project of CS492E, KAIST, 2021 Spring
+
 **doctor-notes**
 
 ## About the Course
@@ -29,7 +30,14 @@ The system aims to support users to have helpful notes so that they would be abl
 
 ## About the Repository
 ### [Front](https://github.com/amy-hyunji/doctor-notes/tree/main/front)
+There are five components in the front directory
+* [Home.js](./front/src/components/Home.js): Main page that contains all the other components
+* [LeftPanel.js](./front/src/components/LeftPanel.js): The panel where lecture recordings are transcribed and shown
+* [MiddlePanel.js](./front/src/components/MiddlePanel.js): The panel where summarizations take place
+* [RightPanel.js](./front/src/components/RightPanel.js): The panel where user's note takes place
+* [NewNote.js](./front/src/components/NewNote.js): The intro page where the user drops the recording file and the note
 
+To run, please refer to [this README](./front/README.md).
 
 ### [Server](https://github.com/amy-hyunji/doctor-notes/tree/main/server)
 #### Framework & Libraries
