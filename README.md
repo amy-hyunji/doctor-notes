@@ -68,6 +68,7 @@ The system aims to support users to have helpful notes so that they would be abl
     * `python bert_train.py`
 #### Explanations
 * 4 level threshold for T5 and any threshold for Bert
-* Current service is T5. We are planning to move to Bert.
+* Current service is T5. 
+* If you want to run the server, contact `alee6868@kaist.ac.kr` for some dependency files and model weights
   
 
