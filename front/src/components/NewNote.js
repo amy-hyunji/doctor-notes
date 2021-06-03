@@ -31,7 +31,7 @@ function NewNote(props) {
           {file.path} - {file.size} bytes
         </li>
     ));
-    
+    /*
     const fileRejectionItems = fileRejections.map(({ file, errors }) => (
         <li key={file.path}>
             {file.path} - {file.size} bytes
@@ -42,6 +42,7 @@ function NewNote(props) {
             </ul>
         </li>
     ));
+    */
 
 
 
@@ -103,6 +104,7 @@ function NewNote(props) {
             setIsLoading(false)
             //console.log("status", res.status)
             if(res.status !== 200) {
+                
                 throw new Error(res.statusText);
             }
             return res.json();
@@ -125,16 +127,17 @@ function NewNote(props) {
 
     const clickButton = () => {
         const sampleDict = {
-            score: [0.5, 0.5, 0.5, 0.5, 0.5],
+            score: [1.0, 0.5, 0.5, 0.0, 0.5],
             script: ["cnn's kelly wallace completed 30-day challengescnn's kelly wallace completed 30-day challengesNews from your life. News from your life. News from your life. News from your life. News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b", "News from your life. There's a few things that I learned while doing these 30-day challenges, the first was instead of the months flying b"],
             script_start_time: [0, 50, 100, 150, 200],
             summary: ["cnn's kelly wallace completed 30-day challenges . she hiked up the highest mountain in africa last year . the challenge helped her becom", "engineer, matt cutts the stalking his powerful visual download the video at ted.com . 30 days is just about the right amount of time to ad", "cnn's kelly wallace completed 30-day challenges . she hiked up the highest mountain in africa last year . the challenge helped her becom", "engineer, matt cutts the stalking his powerful visual download the video at ted.com . 30 days is just about the right amount of time to ad", "cnn's kelly wallace completed 30-day challenges . she hiked up the highest mountain in africa last year . the challenge helped her becom"],
-            user_note: [["hello", "this"], ["is"], ["user note", "lol"], [], ["last one"]]
+            user_note: [["hello", "this", "is", "testing"], ["is"], ["user note", "lol"], [], ["last one"]]
 
         }
         setModal(false)
         //console.log(sampleDict)
-        
+        props.setMin(5)
+        props.setMax(10)
         props.getContents(sampleDict)
     }
 
@@ -163,10 +166,9 @@ function NewNote(props) {
                     </aside>
                 </section>
 
-                <span style={{lineHeight: '1.8', fontSize: '16px'}}>
+                <span style={{lineHeight: '1.8', fontSize: '16px', overflow: 'normal'}}>
                     Please input the minimum and maximum length of the summarization you wish to see. <br/>
-                    Some examples: blah blah
-                    <br/>
+                    
                 </span>
 
                 <Form>

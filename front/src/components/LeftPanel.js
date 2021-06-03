@@ -5,21 +5,37 @@ import {ButtonGroup, Button, Input, TextArea, Form} from 'semantic-ui-react'
 
 function LeftPanel(props) {
     //Const over here
-    const [oneScript, setOneScript] = useState(props.contents)
+    //const [oneScript, setOneScript] = useState(props.contents)
     const [edit, setEdit] = useState(false)
 
     const [showButton, setShowButton] = useState(false)
     const [curridx, setCurridx] = useState(0)
+
+
+    const [editValue, setEditValue] = useState('')
+    const [editIdx, setEditIdx] = useState(0)
   
 
     useEffect(() => {
         console.log("CURR IDX", curridx)
     }, [curridx])
 
-    const handleChange = (e) => {
-        //setOneScript(e.target.value)
-        console.log(e.target.value)
-        console.log()
+    useEffect(() => {
+        console.log("new script", props.contents)
+    }, [props.contents])
+
+    useEffect(() => {
+
+    }, [editValue, editIdx])
+
+    const handleChange = (index, e) => {
+        setEditValue(e.target.value)
+        setEditIdx(index)
+    }
+
+    const sendEditInfo = () => {
+        props.changeScript(editValue, editIdx)
+        setEdit(!edit)
     }
 
     const detectDragged = (idx) => {
@@ -34,20 +50,24 @@ function LeftPanel(props) {
 
     const sendDragged = () => {
         console.log(window.getSelection().toString())
-        props.getDragged(window.getSelection().toString())
+        props.getDragged(window.getSelection().toString(), curridx)
     }
 
     return (
       <div className="panels">
         <h3 className="title">Transcribed Lecture Recording 🎙️</h3>
-        <Button content="edit" size="tiny" onClick={() => {setEdit(!edit)}}></Button>
-        <div style={{width: '92%', height: '85%', margin: "0px auto", overflowY: 'scroll'}}>
+        { !edit
+            ? <Button content="edit" size="tiny" onClick={() => {setEdit(!edit)}}></Button>
+            : <Button content="done" size="tiny" onClick={() => {sendEditInfo()}}></Button>
+        }
+        
+        <div style={{width: '92%', height: '85%', margin: "5px auto 0px", overflowY: 'scroll'}}>
         {   props.contents &&
             props.contents.map((script, index) => (
-                <div style={{marginBottom: '10px', height: '200px', border: '1px solid lightgrey'}}>
+                <div style={{marginBottom: '10px', height: '250px', border: '1px solid lightgrey'}}>
                     { !edit 
                     ? <div>
-                        <div style={{color: 'gray', marginBottom: '3px'}}><b>{index*50} ~ {(index+1)*50} seconds</b></div>
+                        <div style={{color: 'gray', marginBottom: '3px'}}><b>{props.timestamp[index]} ~ {props.timestamp[index]+50} seconds</b></div>
                         
                         <div onMouseUp={() => detectDragged(index)}>{script}</div>
                         {
@@ -58,10 +78,10 @@ function LeftPanel(props) {
                     </div>
                     : <Form >
                         <TextArea 
-                            onChange={handleChange}
+                            onChange={(e) => handleChange(index, e)}
                             defaultValue={script}
                             
-                            style={{height: '200px'}}
+                            style={{height: '250px'}}
                         >
                         </TextArea>
                     </Form>
