@@ -100,6 +100,7 @@ def upload():
         print(f"audio: {audio_filename}, note: {note_filename}")
 
         _dict, save_name = get_script_from_audio(audio_filename, _dict)
+#print(f"dict after stt: {_dict}")
         """
         df = pd.read_csv("MattCutts_2011U_script.csv")
         _dict['script_start_time'] = df['script_start_time']
@@ -126,10 +127,11 @@ output: dict containing `script_start_time`, `script`, `summary`, `score`, `user
 @app.route("/revise", methods=["GET", "POST"])
 def revise():
     if request.method == "POST":
-        my_res.headers.add("Access-Control-Allow-Origin", "*")
         result = request.json
         print(result)
         _dict = result["dict"]
+        _dict['summary'] = []
+        _dict['score'] = []
         min_length = result["min_length"]
         max_length = result["max_length"]
         _dict = summarization(_dict, min_length=min_length, max_length=max_length)
@@ -149,15 +151,16 @@ output: summarized text
 @app.route("/drag", methods=["GET", "POST"])
 def drag():
     if request.method == "POST":
-        my_res.headers.add("Access-Control-Allow-Origin", "*")
-        result = request.form.to_dict()
+        result = request.json 
+        print(result)
+        chunk_index = result['chunk_index']
         min_length = result["min_length"]
         max_length = result["max_length"]
         drag_text = result["drag_text"]
 
         _dict = {"script": [drag_text], "summary": []}
         _dict = summarization(_dict, min_length=min_length, max_length=max_length)
-        return jsonify({'summary': _dict["summary"][0]})
+        return jsonify({'drag_text': drag_text, 'summary': _dict["summary"][0], 'chunk_index': chunk_index})
     else:
         raise NotImplementedError("GET method is not implemented in revise()")
 
@@ -267,6 +270,7 @@ def convert2mono(input_file, output_file):
 def summarization(_dict, min_length=30, max_length=180):
     try:
         _input = [_script for _script in _dict["script"]]
+        print(f"input for summarization: {_input}")
         _output = summarizer(
             _input, min_length=min_length, max_length=max_length, no_repeat_ngram_size=3
         )
@@ -386,14 +390,18 @@ def get_script_from_audio(audio, _script_dict, write_script=False):
         audio_name = "".join(audio.split(".")[:-1])
         print(f"## Working on {audio_name}")
 
-        success = convert2mono(os.path.join(UPLOAD_FOLDER, audio), f"mono_{audio}")
+        success = convert2mono(os.path.join(UPLOAD_FOLDER, audio), f"{audio}")
         if not success:
             raise ValueError("Audio format is not convertible")
 
-        os.system(f"python video-splitter/ffmpeg-split.py -f mono_{audio} -s 50")
+        os.system(f"python video-splitter/ffmpeg-split.py -f {audio} -s 50")
         audio_path = os.path.join(UPLOAD_FOLDER, audio_name)
         os.system(f"mkdir {audio_path}")
-        os.system(f"mv mono_{audio_name}-* {audio_path}")
+        try:
+            os.system(f"mv {audio_name}-* {audio_path}")
+        except:
+            os.system(f"mv {audio} {audio_path}")
+
     except:
         raise RuntimeError("Failed to convert the files into google API input format")
 
@@ -472,6 +480,7 @@ if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"
     os.environ["TRANSFORMERS_CACHE"] = "/mnt/.cache/huggingface"
+    os.system(f"export GOOGLE_APPLICATION_CREDENTIALS='./google-credentials.json'")
 
     summarizer, tokenizer, model = initsetting()
     """
@@ -486,5 +495,5 @@ if __name__ == "__main__":
     df = pd.DataFrame(_dict)
     df.to_csv(os.path.join(UPLOAD_FOLDER, "MattCutts_2011U_copy_info.csv"))
     """
-#app.run(host="0.0.0.0", port=8887, debug=True, ssl_context=('/mnt/hyunji/doctor-notes/server/server.crt', '/mnt/hyunji/doctor-notes/server/server.key'))
-    app.run(host="0.0.0.0", port=8887, debug=True, ssl_context='adhoc')
+    app.run(host="0.0.0.0", port=8887, debug=True, ssl_context=('/mnt/hyunji/doctor-notes/server/server.crt', '/mnt/hyunji/doctor-notes/server/server.key'))
+    # app.run(host="0.0.0.0", port=8887, debug=True, ssl_context='adhoc')
