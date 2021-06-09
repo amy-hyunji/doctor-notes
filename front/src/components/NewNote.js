@@ -71,7 +71,7 @@ function NewNote(props) {
 
 
         setIsLoading(true)
-        fetch(`http://52.156.155.214:8887/files`, {
+        fetch(`http://52.156.155.214:8886/files`, {
             method: 'POST',
 
             body: formData,
@@ -101,7 +101,7 @@ function NewNote(props) {
         
         setIsLoading(true)
         console.log(data)
-        fetch(`http://52.156.155.214:8887/upload`, {
+        fetch(`http://52.156.155.214:8886/upload`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json'
@@ -176,7 +176,7 @@ function NewNote(props) {
                 </span>
                 { showInst
                 ? <span style={{fontSize: '95%', marginLeft: "0", lineHeight: '1.5'}}>
-                    1. Before you start, <b style={{color:'blue'}}>please make sure you get the credential</b> by visiting <a href="https://52.156.155.214:8887">our server</a> and accepting the credential issue. <br/>
+                    1. Before you start, <b style={{color:'blue'}}>please make sure you get the credential</b> by visiting <a href="https://52.156.155.214:8886">our server</a> and accepting the credential issue. <br/>
                     2. Some helpful websites for our service: <br/>
                         - Convert audio file to .wav form: <a href='https://convertio.co/kr/'>https://convertio.co/kr</a> <br/>
                         - Get user note with time recorder: <a href='https://drnotes-notetaking.web.app/'>https://drnotes-notetaking.web.app</a> <br/>
