@@ -374,7 +374,7 @@ function NewNote(props) {
             </Modal.Content>
             <Modal.Actions>
                 <div style={{paddingBottom: '5px'}}>It normally takes around 3~5 minutes to send the files! Please wait 🙏</div>
-                <Button content="Dummy Data" onClick={clickButton} disabled></Button>
+                <Button content="Dummy Data" onClick={clickButton} ></Button>
                 <Button content="Test 1" labelPosition='right' icon='arrow right' onClick={(acceptedFiles) => sendToServer1(acceptedFiles)} ></Button>
                 <Button content="Test 2" labelPosition='right' icon='arrow right' onClick={(acceptedFiles) => sendToServer2(acceptedFiles)} ></Button>
                 {/*

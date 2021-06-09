@@ -12,8 +12,8 @@ function LeftPanel(props) {
     const [curridx, setCurridx] = useState(0)
 
 
-    const [editValue, setEditValue] = useState('')
-    const [editIdx, setEditIdx] = useState(0)
+    const [editValue, setEditValue] = useState('?')
+    const [editIdx, setEditIdx] = useState(100)
   
 
     useEffect(() => {
@@ -34,7 +34,9 @@ function LeftPanel(props) {
     }
 
     const sendEditInfo = () => {
-        props.changeScript(editValue, editIdx)
+        if (editValue !== '?' && editIdx !== 100) {
+            props.changeScript(editValue, editIdx)
+        }
         setEdit(!edit)
     }
 

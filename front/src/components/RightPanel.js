@@ -8,9 +8,9 @@ function RightPanel(props) {
     //Const over here
     const [edit, setEdit] = useState(false)
 
-    const [editValue, setEditValue] = useState('')
-    const [editIdx, setEditIdx] = useState(0)
-    const [editIdxtwo, setEditIdxtwo] = useState(0)
+    const [editValue, setEditValue] = useState('?')
+    const [editIdx, setEditIdx] = useState(100)
+    const [editIdxtwo, setEditIdxtwo] = useState(100)
 
     useEffect(() => {
         console.log('right changed!')
@@ -29,8 +29,10 @@ function RightPanel(props) {
         setEditIdxtwo(idx)
     }
     const sendEditInfo = () => {
-        console.log(editValue, editIdx, editIdxtwo)
-        props.changeNotes(editValue, editIdx, editIdxtwo)
+        //console.log(editValue, editIdx, editIdxtwo)
+        if (editValue !== '?' && editIdx !== 100 && editIdxtwo !== 100) {
+            props.changeNotes(editValue, editIdx, editIdxtwo)
+        }
         setEdit(!edit)
     }
 
