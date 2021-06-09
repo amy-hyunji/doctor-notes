@@ -14,6 +14,8 @@ import { Grid} from '@material-ui/core';
 import {ButtonGroup, Button} from 'semantic-ui-react'
 import ReactAudioPlayer from 'react-audio-player';
 
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 
 
@@ -36,7 +38,8 @@ function Home() {
     const [max, setMax] = useState(0);
 
     const [drag, setDrag] = useState(false)
-
+    
+    const [audio, setAudio] = useState('')
 
 
     useEffect(() => {
@@ -62,6 +65,10 @@ function Home() {
     useEffect(() => {
         console.log(newSummary)
     }, [newSummary])
+
+    useEffect(() => {
+        console.log("new audio", audio)
+    }, [setAudio])
   
     const toServer = (input) => {
         const finalResult = input;
@@ -157,11 +164,78 @@ function Home() {
 
         
     }
+
+    const removeNote = (data, idx, idx2) => {
+        var newInfo = {...allInfo}
+        
+        var newChunk = newInfo['user_note'][idx]
+        newChunk.splice(idx2, 1)
+        newInfo['user_note'][idx] = newChunk
+        setAllInfo(newInfo)
+    }
+
+    const exportpdf = () => {
+        /*
+        html2canvas(document.querySelector("#export"), {
+            onpreloaded: (canvas) => {document.querySelector("#export").style.overflowY="visible";},
+            onpreloaded: function(canvas){}
+        }).then(canvas => {
+            //document.body.appendChild(canvas);  // if you want see your screenshot in body.
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF();
+            pdf.addImage(imgData, 'PNG', 0, 0);
+            pdf.save("download.pdf"); 
+        })
+        */
+        console.log(notes)
+        console.log(allInfo['script_start_time'])
+
+        var newString = ''
+
+        for (var i in notes){
+            const endTime = allInfo['script_start_time'][i]+50
+            newString += allInfo['script_start_time'][i] + " ~ " + endTime + ' seconds\n' 
+            for (var j in notes[i]) {
+                newString += "* " + notes[i][j] + '\n'
+            }
+            newString += '\n'
+        }
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(newString));
+        element.setAttribute('download', 'NewNote.txt');
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+
+        /*
+        html2canvas(document.querySelector("#export")).then(function(canvas) {
+            var imgData = canvas.toDataURL('image/png');
+            var imgWidth = 210;
+            var pageHeight = imgWidth * 1.414;
+            var imgHeight = canvas.height * imgWidth / canvas.width;
+
+            var doc = new jsPDF({
+            'orientation': 'p',
+            'unit': 'mm',
+            'format': 'a4'
+            });
+
+            doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            doc.save('sample_A4.pdf');
+            console.log('Reached here?');
+        });
+        */
+
+    }
     
 
     return (
         <div className="main-page">
-            <NewNote getContents={getContents} setMin={setMin} setMax={setMax}></NewNote>
+            <NewNote getContents={getContents} setMin={setMin} setMax={setMax} setAudio={setAudio}></NewNote>
             <img src={drnotes} style={{position: 'absolute', width: '160px', left: '5px', top: '10px'}} /> 
             <div style={{height: "10vh", paddingTop: "2.5vh", float: "right", paddingRight: "20px"}}>
                 
@@ -170,7 +244,7 @@ function Home() {
                     <Button onClick={() => setMiddle(!middle)} color={middle ? 'blue': ''}>Summarization</Button>
                     <Button onClick={() => setRight(!right)} color={right ? 'blue': ''}>My Notes 📝</Button>
                 </Button.Group>
-                <Button onClick={() => toServer("POST TO SERVER")} color='green' style={{marginLeft: '10px'}}>Export ↗️</Button>
+                <Button onClick={() => exportpdf()} color='green' style={{marginLeft: '10px'}}>Export ↗️</Button>
                 
             </div>
             <Grid container justify="center" spacing={1} style={{padding: '0px 10px'}}>
@@ -208,13 +282,14 @@ function Home() {
                             contents={notes}
                             timestamp={allInfo['script_start_time']}
                             changeNotes={changeNotes}
+                            removeNote={removeNote}
                         ></RightPanel>
                     </Grid>
                 }
             </Grid>
             {
             <ReactAudioPlayer
-                src={tedaudio}
+                src={audio.path}
                 
                 controls
                 volume={0.3}

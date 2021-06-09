@@ -35,7 +35,7 @@ function RightPanel(props) {
     }
 
     return (
-        <div className='panels'>
+        <div className='panels' id="export">
             <h3 className="title">My Notes 📝</h3>
             { !edit
                 ? <Button content="edit" size="tiny" onClick={() => {setEdit(!edit)}}></Button>
@@ -46,15 +46,18 @@ function RightPanel(props) {
             {
                 props.contents ? 
                 props.contents.map((notes, index) => (
-                    <div style={{marginBottom: '10px', height: '250px', border: '1px solid lightgrey'}}>
+                    <div style={{marginBottom: '10px', minHeight: '200px', border: '1px solid lightgrey'}}>
                     { !edit
                     ? <div>
                         <div style={{color: 'gray', marginBottom: '3px'}}><b>{props.timestamp[index]} ~ {props.timestamp[index]+50} seconds</b></div>
                         {
                             notes.length > 0 
                             ? 
-                            notes.map((note) => (
-                                <li style={{textAlign: 'left', margin: '0px 0px 5px 15px'}}>{note}</li>
+                            notes.map((note, idx) => (
+                                <div style={{display: 'flex', width: '100%'}}>
+                                <li style={{textAlign: 'left', margin: '0px 0px 5px 15px', alignContent: 'flex-start', width: '100%'}}>{note}</li>
+                                <Button onClick={() => props.removeNote(note, index, idx)} size='mini' color='grey' style={{alignContent: 'flex-end', padding: '0px 5px', margin: '0px 0 0px 0px', height: '15px', marginRight: '0'}}>-</Button>
+                                </div>
                             ))
                             : null
                         }
@@ -67,10 +70,11 @@ function RightPanel(props) {
                             ? 
                             notes.map((note, idx) => (
                                 <TextArea 
-                                    style={{height: '30px'}}
+                                    style={{height: '35px'}}
                                     onChange={(e) => handleChange(index, idx, e)}
                                     defaultValue={note}
                                 ></TextArea>
+                                
                             ))
                             : null
                         }

@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './App.css';
 import 'semantic-ui-css/semantic.min.css'
 
 import drnotes from './assets/DrNotes-logo.png';
+import test1 from './assets/T1.mp4';
+//import test2 from './assets/T2.mp4';
 
 import { Button, Form, TextArea, Input } from 'semantic-ui-react'
 import ReactPlayer from 'react-player'
+import ReactAudioPlayer from 'react-audio-player';
+
 
 
 function App() {
@@ -14,6 +18,13 @@ function App() {
   const [lastidx, setLastidx] = useState(0);
   const [video, setVideo] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+
+  const [currTime, setCurrTime] = useState(0);
+
+  useEffect(() => {
+    setCurrTime(parseInt(reactPlayer.current.getCurrentTime()))
+    console.log(currTime)
+  }, [currTime])
 
   const downloadTxtFile = (filename, text) => {
     var element = document.createElement('a');
@@ -33,9 +44,12 @@ function App() {
       var splitNote = note.split("\n")
       
       if (splitNote[splitNote.length-1].indexOf(":\t") !== -1) {
-        splitNote[splitNote.length-1] = lastidx + ":\t" + splitNote[splitNote.length-1]// .split(': ')[-1]
+        var context = splitNote[splitNote.length-1].split(':\t')
+        //splitNote[splitNote.length-1] = lastidx + ":\t" + context[context.length-1]// .split(': ')[-1]
       }
-      splitNote[splitNote.length-1] = lastidx + ":\t" + splitNote[splitNote.length-1]// .split(': ')[-1]
+      else {
+        splitNote[splitNote.length-1] = lastidx + ":\t" + splitNote[splitNote.length-1]// .split(': ')[-1] 
+      }
       setNote(splitNote.join("\n"))
     }
 
@@ -47,7 +61,7 @@ function App() {
     setNote(e.target.value)
     
     var splitNote = note.split("\n")
-    if (splitNote[splitNote.length-1] == '') {
+    if (splitNote[splitNote.length-1] === '') {
       setLastidx(parseInt(reactPlayer.current.getCurrentTime()))
       //console.log("starting time:", lastidx)
     }
@@ -75,14 +89,12 @@ function App() {
         fluid
       />
       <ReactPlayer 
-        url={videoUrl} 
+        url={videoUrl}
         volume={0.3}
         ref={reactPlayer}
-
+        
         style={{margin: '0 auto 2%', backgroundColor: 'lightgray'}}
       />
-      {/*<Button onClick={() => console.log(reactPlayer.current.getCurrentTime())}>Get current time</Button>*/}
-
       <Form>
         <TextArea 
           placeholder='Write your notes here!'

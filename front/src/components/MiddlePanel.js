@@ -35,7 +35,7 @@ function MiddlePanel(props) {
                 allSummary &&
                 allSummary.map((summary, index) => (
                     
-                    <div style={{marginBottom: '10px', height: '250px', border: '1px solid lightgrey'}}>
+                    <div style={{marginBottom: '10px', minHeight: '200px', border: '1px solid lightgrey'}}>
                     { props.score[index] >= threshold
                     ? <div>
                         <div style={{color: 'gray', marginBottom: '3px'}}><b>{props.timestamp[index]} ~ {props.timestamp[index]+50} seconds</b></div>
@@ -58,7 +58,7 @@ function MiddlePanel(props) {
                 ))
             } </div>
             : <div>
-                <div style={{marginBottom: '10px', height: '250px', border: '1px solid lightgrey'}}>
+                <div style={{marginBottom: '10px', minHeight: '200px', border: '1px solid lightgrey'}}>
                     <div>{props.newSummary[0]}</div>
                     <div style={{margin: "10px 0"}}>⬇️</div>
                     <div>{props.newSummary[2]}</div>

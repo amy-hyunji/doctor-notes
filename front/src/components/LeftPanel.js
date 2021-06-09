@@ -17,11 +17,11 @@ function LeftPanel(props) {
   
 
     useEffect(() => {
-        console.log("CURR IDX", curridx)
+        //console.log("CURR IDX", curridx)
     }, [curridx])
 
     useEffect(() => {
-        console.log("new script", props.contents)
+        //console.log("new script", props.contents)
     }, [props.contents])
 
     useEffect(() => {
@@ -49,7 +49,7 @@ function LeftPanel(props) {
     }
 
     const sendDragged = () => {
-        console.log(window.getSelection().toString())
+        //console.log(window.getSelection().toString())
         props.getDragged(window.getSelection().toString(), curridx)
     }
 
@@ -64,7 +64,7 @@ function LeftPanel(props) {
         <div style={{width: '92%', height: '85%', margin: "5px auto 0px", overflowY: 'scroll'}}>
         {   props.contents &&
             props.contents.map((script, index) => (
-                <div style={{marginBottom: '10px', height: '250px', border: '1px solid lightgrey'}}>
+                <div style={{marginBottom: '10px', minHeight: '200px', border: '1px solid lightgrey'}}>
                     { !edit 
                     ? <div>
                         <div style={{color: 'gray', marginBottom: '3px'}}><b>{props.timestamp[index]} ~ {props.timestamp[index]+50} seconds</b></div>
@@ -81,7 +81,7 @@ function LeftPanel(props) {
                             onChange={(e) => handleChange(index, e)}
                             defaultValue={script}
                             
-                            style={{height: '250px'}}
+                            style={{minHeight: '200px'}}
                         >
                         </TextArea>
                     </Form>
