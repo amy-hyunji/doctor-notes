@@ -59,9 +59,9 @@ function MiddlePanel(props) {
             } </div>
             : <div>
                 <div style={{marginBottom: '10px', minHeight: '200px', border: '1px solid lightgrey'}}>
-                    <div>{props.newSummary[0]}</div>
-                    <div style={{margin: "10px 0"}}>⬇️</div>
                     <div>{props.newSummary[2]}</div>
+                    <div style={{margin: "10px 0"}}>⬇️</div>
+                    <div>{props.newSummary[0]}</div>
                 </div>
                 <Button color='green' onClick={() => {props.addNotes(props.newSummary[0], props.newSummary[1])}} size="tiny" content="Add this summary?"></Button>
                 <div style={{height: '10px'}}> </div>
