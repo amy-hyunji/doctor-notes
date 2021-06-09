@@ -72,7 +72,7 @@ function Home() {
   
     const toServer = (input) => {
         const finalResult = input;
-        axios.post(`http://52.156.155.214:8887/`, {
+        axios.post(`http://52.156.155.214:8886/`, {
             sentence: finalResult,
         })
             .then((res) => {
@@ -98,7 +98,7 @@ function Home() {
         }
         console.log(dragInfo)
         //send to server to get summary
-        fetch(`http://52.156.155.214:8887/drag`, {
+        fetch(`http://52.156.155.214:8886/drag`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -138,7 +138,7 @@ function Home() {
             max_length: max
         }
 
-        fetch(`http://52.156.155.214:8887/revise`, {
+        fetch(`http://52.156.155.214:8886/revise`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
