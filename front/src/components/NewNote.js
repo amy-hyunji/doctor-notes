@@ -124,6 +124,138 @@ function NewNote(props) {
         
     }
 
+    const sendToServer1 = () => {
+        const formData = new FormData()
+        console.log(acceptedFiles)
+        for (var f in acceptedFiles){
+            console.log(acceptedFiles[f])
+            if (acceptedFiles[f].name.indexOf('.txt') > -1) {
+                formData.append('user_note', acceptedFiles[f])
+            }
+            else {
+                formData.append('audio_file', acceptedFiles[f])
+                props.setAudio(acceptedFiles[f])
+            }
+        }
+
+        setIsLoading(true)
+        fetch(`http://52.156.155.214:8887/demo_upload`, {
+            method: 'POST',
+
+            body: formData,
+            //mode:'no-cors'
+        }).then(res => {
+            setIsLoading(false)
+            //console.log("res", res)
+            //console.log("status", res.status)
+            //console.log('res json', res.json())
+            if(res.status !== 200) {
+                throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
+            sendTest1(data) 
+        });
+    }
+
+    const sendToServer2 = () => {
+        const formData = new FormData()
+        console.log(acceptedFiles)
+        for (var f in acceptedFiles){
+            console.log(acceptedFiles[f])
+            if (acceptedFiles[f].name.indexOf('.txt') > -1) {
+                formData.append('user_note', acceptedFiles[f])
+            }
+            else {
+                formData.append('audio_file', acceptedFiles[f])
+                props.setAudio(acceptedFiles[f])
+            }
+        }
+
+        setIsLoading(true)
+        fetch(`http://52.156.155.214:8887/demo_upload`, {
+            method: 'POST',
+
+            body: formData,
+            //mode:'no-cors'
+        }).then(res => {
+            setIsLoading(false)
+            //console.log("res", res)
+            //console.log("status", res.status)
+            //console.log('res json', res.json())
+            if(res.status !== 200) {
+                throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
+            sendTest2(data) 
+        });
+    }
+
+    const sendTest1 = (data) => {
+        data['min_length'] = parseInt(min)
+        data['max_length'] = parseInt(max)
+        props.setMin(parseInt(min))
+        props.setMax(parseInt(max))
+        
+        setIsLoading(true)
+        console.log(data)
+        fetch(`http://52.156.155.214:8887/test1`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+            //mode:'cors'
+        }).then(res => {
+            setIsLoading(false)
+            //console.log("status", res.status)
+            if(res.status !== 200) {
+                
+                throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
+            setModal(false)
+            props.getContents(data)
+        });
+        
+    }
+
+    const sendTest2 = (data) => {
+        data['min_length'] = parseInt(min)
+        data['max_length'] = parseInt(max)
+        props.setMin(parseInt(min))
+        props.setMax(parseInt(max))
+        
+        setIsLoading(true)
+        console.log(data)
+        fetch(`http://52.156.155.214:8887/test2`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data),
+            //mode:'cors'
+        }).then(res => {
+            setIsLoading(false)
+            //console.log("status", res.status)
+            if(res.status !== 200) {
+                
+                throw new Error(res.statusText);
+            }
+            return res.json();
+        }).then(data => {
+            console.log(data)
+            setModal(false)
+            props.getContents(data)
+        });
+        
+    }
+
     
     
     const handleChange = (e) => {
@@ -243,6 +375,9 @@ function NewNote(props) {
             <Modal.Actions>
                 <div style={{paddingBottom: '5px'}}>It normally takes around 3~5 minutes to send the files! Please wait 🙏</div>
                 <Button content="Dummy Data" onClick={clickButton} disabled></Button>
+                <Button content="Test 1" labelPosition='right' icon='arrow right' onClick={(acceptedFiles) => sendToServer1(acceptedFiles)} ></Button>
+                <Button content="Test 2" labelPosition='right' icon='arrow right' onClick={(acceptedFiles) => sendToServer2(acceptedFiles)} ></Button>
+                {/*
                 <Button
                     onClick={(acceptedFiles) => sendToServer(acceptedFiles)}
                     labelPosition='right'
@@ -250,6 +385,7 @@ function NewNote(props) {
                     content='Begin Loading'
                     loading={isLoading}
                 />
+                */}
             </Modal.Actions>
           </Modal>
       </div>
