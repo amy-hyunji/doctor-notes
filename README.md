@@ -24,7 +24,7 @@ The system aims to support users to have helpful notes so that they would be abl
 * DP1: Ideation
 * DP2: Pitch [Slides](https://docs.google.com/presentation/d/18MUD5E3eXFNqXGP2AUoiThn4lr2aBdyAVEYhUwT2unY/edit?usp=sharing)
 * DP3: High-fi Prototype [Report](https://demo.hedgedoc.org/Y6VnFUWARveC62BEVaBERA?edit)
-* DP4: Final Presentation
+* DP4: Final Presentation [Slides](https://docs.google.com/presentation/d/1SvtGmtLQXbY220LcE8mowvoa2vEx4V1TWx-ZmMsKgBs/edit?usp=sharing)
 * DP5: Final Paper & Video
 
 
