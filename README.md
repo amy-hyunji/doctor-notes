@@ -1,4 +1,4 @@
-# CS473 Human AI Interaction
+# CS492(E) Human AI Interaction
 Repository for Final Project of CS492E, KAIST, 2021 Spring
 
 **doctor-notes**
