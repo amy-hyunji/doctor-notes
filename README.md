@@ -6,8 +6,6 @@ Repository for Final Project of CS492E, KAIST, 2021 Spring
 ## About the Course
 Humans and AI are more closely interacting than ever before, in all areas of our work, education, and life. As more intelligent machines are entering our lives, their accuracy and performance are not the only important factor that matters. As designers of such technology, we have to carefully consider the user experience of AI in order for AI to be of practical value. In this course, we will explore various dimensions of human-AI interaction, including ethics, explainability, design process involving AI, visualization, human-AI collaboration, recommender systems, and a few notable application areas.
 
-A side goal of this course is to encourage all of us to bridge the gap between the two fields of HCI and AI. As a step toward this vision, we want to encourage students with HCI and AI background to mingle, interact, discuss, and collaborate through this course. We expect most students taking this course to have background knowledge in either HCI or AI through at least intro-level coursework. If you’re unsure if you meet this criterion, please contact the course staff immediately. Having background in both is great, although not required.  
-
 [Course Website](https://human-ai.kixlab.org/)
 
 ## About the Final Project
