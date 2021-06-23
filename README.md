@@ -20,7 +20,7 @@ The system aims to support users to have helpful notes so that they would be abl
 ### Design Project Milestones
 * DP0: Team Formation
 * DP1: Ideation
-* DP2: Pitch [Slides](https://docs.google.com/presentation/d/18MUD5E3eXFNqXGP2AUoiThn4lr2aBdyAVEYhUwT2unY/edit?usp=sharing)
+* DP2: Pitch [Slides](./images/1-project-pitch/HAI Project Pitch - Team UFT.pdf)
 * DP3: High-fi Prototype [Report](https://demo.hedgedoc.org/Y6VnFUWARveC62BEVaBERA?view)
 * DP4: Final Presentation [Slides](https://docs.google.com/presentation/d/1SvtGmtLQXbY220LcE8mowvoa2vEx4V1TWx-ZmMsKgBs/edit?usp=sharing)
 * DP5: Final Paper & Video
@@ -58,7 +58,7 @@ To run, please refer to [this README](./front/README.md).
     * 1. summarization model
     * 2. scoring model
     * 3. tokenizer 
- 
+
 ### [Models](https://github.com/amy-hyunji/doctor-notes/tree/main/keyword)
 #### Framework & Libraries
 * Python, Pytorch, huggingface, pytorch-lightning
@@ -76,5 +76,4 @@ To run, please refer to [this README](./front/README.md).
 * 4 level threshold for T5 and any threshold for Bert
 * Current service is T5. 
 * If you want to run the server, contact `alee6868@kaist.ac.kr` for some dependency files and model weights
-  
 

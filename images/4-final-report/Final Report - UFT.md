@@ -4,9 +4,10 @@ Team UFT - Junha Hyung, Hyunji Lee, Jeongeon Park
 
 2021 Spring, CS492(E) Human-AI Interaction, KAIST
 
-
 Link to Video: https://youtu.be/uQfXefMjBD8
+
 Link to Prototype: https://drnotes-492e.web.app/
+
 Link to Github: https://github.com/amy-hyunji/doctor-notes
 
 ---
