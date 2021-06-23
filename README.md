@@ -1,16 +1,18 @@
 # CS492(E) Human AI Interaction
 Repository for Final Project of CS492E, KAIST, 2021 Spring
 
-**doctor-notes**
+---
 
 ## About the Course
 Humans and AI are more closely interacting than ever before, in all areas of our work, education, and life. As more intelligent machines are entering our lives, their accuracy and performance are not the only important factor that matters. As designers of such technology, we have to carefully consider the user experience of AI in order for AI to be of practical value. In this course, we will explore various dimensions of human-AI interaction, including ethics, explainability, design process involving AI, visualization, human-AI collaboration, recommender systems, and a few notable application areas.
 
 [Course Website](https://human-ai.kixlab.org/)
 
+---
+
 ## About the Final Project
-### Our system: Doctor-Notes
-The system aims to support users to have helpful notes so that they would be able to remember or recollect the ideas from the lecture. [Our survey](https://docs.google.com/spreadsheets/d/18FxLU3xmcSGTml23OVw57pN_nvVM-6hofVSfdTYVtRQ/edit?usp=sharing) result shows that users have a hard time when they are trying to do two works at a same time: taking notes, listening to the lecture. We tried to solve this problem by letting users concentrate on the lecture and take notes afterward with our service. You can try our system [here](https://drnotes-492e.web.app)
+### Our system: DrNotes
+The system aims to support users to have helpful notes so that they would be able to remember or recollect the ideas from the lecture. [Our survey](https://docs.google.com/spreadsheets/d/18FxLU3xmcSGTml23OVw57pN_nvVM-6hofVSfdTYVtRQ/edit?usp=sharing) result shows that users have a hard time when they are trying to do two works at a same time: taking notes, listening to the lecture. We tried to solve this problem by letting users concentrate on the lecture and take notes afterward with our service. You can try our system [here](https://drnotes-492e.web.app). (Warning: The server might be down.)
 
 ### Contributors
 * Junha Hyung
@@ -20,11 +22,12 @@ The system aims to support users to have helpful notes so that they would be abl
 ### Design Project Milestones
 * DP0: Team Formation
 * DP1: Ideation
-* DP2: Pitch [Slides](./images/1-project-pitch/HAI Project Pitch - Team UFT.pdf)
-* DP3: High-fi Prototype [Report](https://demo.hedgedoc.org/Y6VnFUWARveC62BEVaBERA?view)
-* DP4: Final Presentation [Slides](https://docs.google.com/presentation/d/1SvtGmtLQXbY220LcE8mowvoa2vEx4V1TWx-ZmMsKgBs/edit?usp=sharing)
-* DP5: Final Paper & Video
+* DP2: Pitch [[Slides](https://github.com/amy-hyunji/doctor-notes/blob/main/images/1-project-pitch/HAI%20Project%20Pitch%20-%20Team%20UFT.pdf)]
+* DP3: High-fi Prototype [[Report](https://github.com/amy-hyunji/doctor-notes/blob/main/images/2-prototype/Milestone%202%20-%20Prototype.md)]
+* DP4: Final Presentation [[Slides](https://github.com/amy-hyunji/doctor-notes/blob/main/images/3-final-presentation/HAI%20Project%20Final%20Presentation%20-%20UFT.pdf)]
+* DP5: Final Report & Video [[Report](https://github.com/amy-hyunji/doctor-notes/blob/main/images/4-final-report/Final%20Report%20-%20UFT.md)] [[Video](https://youtu.be/uQfXefMjBD8)]
 
+---
 
 ## About the Repository
 ### [Front](https://github.com/amy-hyunji/doctor-notes/tree/main/front)
